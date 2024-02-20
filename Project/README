@@ -1,0 +1,23 @@
+Deploy the planutils docker image.
+
+1 - Run the docker image: 
+    sudo docker build -t planutils_image .
+
+2 - Run the container:
+    sudo docker run -it --privileged planutils_image bash
+
+3 - Inside the container (after executing step 2) copy the id
+
+    e.g. root@e8122184f50e:~# -> e8122184f50e
+
+    Otherwise, in other window use:
+
+    docker container ls
+
+    And copy the container id that corresponds to the image used (planutils_image). 
+
+4 - Paste the id in the field CONTAINER_NAME (first cell) of both:
+    ./notebook.ipynb
+    ./pdd_tester/pddl_tester.ipynb
+
+The notebooks can be used.
