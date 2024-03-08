@@ -1,5 +1,0 @@
-(move agent_0 l4_3 l4_4)
-(move agent_0 l4_4 l3_4)
-(move agent_0 l3_4 l2_4)
-(move agent_0 l2_4 l1_4)
-; cost = 4 (unit cost)

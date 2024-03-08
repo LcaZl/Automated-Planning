@@ -1,7 +1,0 @@
-;; problem file: problem_6.pddl
-(define (problem default)
-  (:domain default)
-  (:objects l0_0 l0_1 l1_0 l1_1 l2_1 l2_2 l2_3 l3_2 l4_2 l4_3 - location agent_0 - agent obj_valve_0 obj_valve_1 - valve obj_bolt_0 obj_bolt_1 - bolt obj_tool_0 obj_tool_1 - tool box_0 box_1 - box workstation_0 - workstation warehouse_0 - warehouse )
-  (:init (adjacent l2_2 l2_1) (has warehouse_0 box_1) (adjacent l0_1 l0_0) (at obj_valve_0 l4_2) (adjacent l2_3 l2_2) (adjacent l1_0 l0_0) (at obj_tool_1 l1_1) (has workstation_0 obj_tool_1) (adjacent l2_1 l2_2) (at box_1 l4_2) (at obj_bolt_0 l4_2) (at obj_valve_1 l1_1) (has workstation_0 obj_bolt_1) (at agent_0 l4_2) (adjacent l4_2 l4_3) (= (num_objects_at workstation_0 valve) 1) (adjacent l1_1 l1_0) (has warehouse_0 box_0) (adjacent l0_0 l0_1) (adjacent l2_2 l2_3) (= (num_objects_at workstation_0 bolt) 1) (adjacent l2_2 l3_2) (adjacent l1_1 l2_1) (empty box_1) (at obj_tool_0 l4_2) (adjacent l3_2 l4_2) (has warehouse_0 obj_tool_0) (at box_0 l4_2) (= (num_objects_at workstation_0 tool) 1) (has warehouse_0 obj_valve_0) (adjacent l1_1 l0_1) (adjacent l0_0 l1_0) (adjacent l0_1 l1_1) (adjacent l3_2 l2_2) (at warehouse_0 l4_2) (at obj_bolt_1 l1_1) (adjacent l4_2 l3_2) (adjacent l4_3 l4_2) (adjacent l1_0 l1_1) (at workstation_0 l1_1) (empty box_0) (has warehouse_0 obj_bolt_0) (has workstation_0 obj_valve_1) (adjacent l2_1 l1_1))
-  (:goal (and (= (num_objects_at workstation_0 tool) 1) (= (num_objects_at workstation_0 valve) 2) (= (num_objects_at workstation_0 bolt) 1)))
-)

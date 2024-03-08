@@ -21,3 +21,20 @@ Deploy the planutils docker image.
     ./pdd_tester/pddl_tester.ipynb
 
 The notebooks can be used.
+
+ - Installare planutils container per la PRIMA VOLTA con mount della directory corrente:
+docker run -it --privileged --name my_planutils_container -v $(pwd):/work aiplanning/planutils:latest bash
+
+ -  Avviare container le volte sucessive
+
+ docker run -it --privileged --name my_planutils_container -v $(pwd):/work my_custom_planutils_image bash
+
+
+ - Stop container
+docker stop my_planutils_container
+
+ - Start container and attach to terminal, saved container.
+docker start -ai my_planutils_container
+
+ - Salvare stato container dopo stop
+ docker commit my_planutils_container my_custom_planutils_image
