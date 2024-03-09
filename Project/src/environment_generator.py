@@ -1,257 +1,199 @@
 from src.functions import *
-
-class Agent:
-    
-    def __init__(self, id, position):
-        self.id = id
-        self.position = position
-
-    def __str__(self):
-        return f'[{self.id}, {self.position}]'
-    
-    __repr__ = __str__
-
-class Warehouse:
-    
-    def __init__(self, id, position):
-        self.id = id
-        self.position = position
-        
-    def __str__(self):
-        return f'[{self.id}, {self.position}]'
-    
-    __repr__ = __str__
-
-class Workstation:
-    
-    def __init__(self, id, position, types):
-        self.id = id
-        self.position = position
-        self.own_supplies = set()
-        self.needed_supplies = set()
-        
-    def __str__(self):
-        return f'[{self.id}, {self.position}, O:{self.own_supplies}, N:{self.needed_supplies}]'
-    
-    __repr__ = __str__
-
-    
-class Supply:
-
-    def __init__(self, id, position, type, stored_by):
-        self.id = id
-        self.position = position 
-        self.type = type
-        self.stored_by = stored_by
-        
-    def __str__(self):
-        return f'[{self.id}, {self.position}, {self.type}]'
-    
-    __repr__ = __str__
-    
-    def update_location(self, position, stored_by):
-        self.position = position
-        self.stored_by = stored_by
-    
-class Box:
-    
-    def __init__(self, id, position, initial_wh_id):
-        self.id = id
-        self.position = position
-        self.stored_by = initial_wh_id
-
-    def __str__(self):
-        return f'[{self.id}, {self.position}]'
-    
-    __repr__ = __str__
-
-class Carrier:
-
-    def __init__(self, id, agent, capacity):
-        self.id = id
-        self.attached_to = agent
-        self.capacity = capacity
-        self.load = 0
-
-    def __str__(self):
-        return f'[{self.id}, {self.capacity}, {self.attached_to.id}]'
-    
-    __repr__ = __str__
+from src.entities import *
 
 class Environment_generator:
-    
-    def __init__(self, configuration, problem_id = 'P1', verbose = True):
-            
-        self.configuration = configuration # Parameters
+    def __init__(self, configuration, problem_id='P1', verbose=True):
+        """
+        Initialize environment with configuration and problem details.
+
+        """
+        self.configuration = configuration
         self.problem_id = problem_id
-        self.X = configuration.X # Environment matrix width
-        self.Y = configuration.Y # environment matrix height
-        self.active_cells = configuration.active_cells # Active cells (max XxY)
-        self.agent_count = configuration.agents # # of available robots
-        self.warehouses_count = configuration.warehouses # # of available warehouses
-        self.workstation_count = configuration.workstations # # of available workstations
+        self.X = configuration.X  # Matrix width
+        self.Y = configuration.Y  # Matrix height
+        self.active_cells = configuration.active_cells  # Number of active cells
+        self.agent_count = configuration.agents  # Number of agents
+        self.warehouses_count = configuration.warehouses  # Number of warehouses
+        self.workstation_count = configuration.workstations  # Number of workstations
 
-        # Content type and quantity available (1 for each workstation for each type)
+        # Setup for content type and initial box count.
         self.content = [(type, self.workstation_count) for type in configuration.content_type]
-        self.box_count = configuration.boxes # # of available box
+        self.box_count = configuration.boxes
 
-        # Internale environment rapresentation
-        self.matrix = np.zeros((self.X, self.Y), dtype=int) # Matrix XxY
-        self.supply_types = configuration.content_type # Supply types available (sstring)
-        self.supply_type_count = len(self.content) # # of supply types
-        self.warehouse_positions = [] # Warehouses positions (there no workstations can be placed)
-        self.agent_positions = [] # Initial agent/s position
-        
+        # Initialize environment matrix and supply types.
+        self.matrix = np.zeros((self.X, self.Y), dtype=int)  # Environment matrix
+        self.supply_types = configuration.content_type
+        self.supply_type_count = len(self.content)
+
+        # Initialize positions and internal representations.
+        self.warehouse_positions = []  # To store warehouse positions
+        self.agent_positions = []  # To store initial agent positions
         if self.problem_id != 'P1':
+            # For other problems, set max carriers' capacity and initialize carriers.
             self.max_carriers_capacity = self.configuration.carrier_capacity
             self.carriers = {}
 
-        # Internal rapresentation of each environment entity
-        self.agents = {} 
+        self.agents = {}
         self.warehouses = {}
         self.workstations = {}
         self.supplies = {}
         self.boxes = {}
-        
-        # Randomly initialize the number of available locations (accordingly to active_cells)
+
+        # Define the active area of the environment based on active_cells.
         self.create_environment_active_area()
 
-        # Generate all environment entities
+        # Generate entities within the environment.
         self.generate_warehouses()
         self.generate_agents()
-        self.generate_content()
+        self.generate_supplies()
         self.generate_boxex()
         self.generate_workstations()
         if self.problem_id != 'P1':
             self.generate_carriers()
 
-        # Randomly define the needed and owned supplies for the workstations
+        # Assign random goals and supplies to workstations.
         self.random_goal()
+        if verbose: self.toString()  # Optionally print environment details.
 
-        # Used for pddl goal generation
-        self.workstations_state = {id : None for id in self.workstations.keys()}
-        for ws in self.workstations.values():
-            self.workstations_state[ws.id] = {'own': ws.own_supplies, 'needs': ws.needed_supplies}
-                
-        if verbose: self.toString() # print environment info
 
     def random_goal(self):
-
-        supplies_per_type = { type : [supply for supply in self.supplies.values() if supply.type == type] for type in self.supply_types }
+        """
+        Assigns random goals for each workstation regarding the supplies they need or own.
+        Supplies are assigned based on random thresholds to simulate variability in needs and ownership.
+        """
+        # Prepare a dictionary mapping each supply type to available supplies of that type.
+        supplies_per_type = {type: [supply for supply in self.supplies.values() if supply.type == type] for type in self.supply_types}
 
         for ws in self.workstations.values():
             for type in self.supply_types:
+                need = random.randint(0, 100)  # Randomly decide if a workstation needs a supply
+                own = random.randint(0, 100)  # Randomly decide if a workstation already owns a supply
 
-                need = random.randint(0,100)
-                if need > 40:
+                if need > 20:
                     ws.needed_supplies.add(supplies_per_type[type].pop())
-                else:
-                    own = random.randint(0,100)
-                    if own >= 70:
-                        ws.own_supplies.add(supplies_per_type[type].pop())
-                               
+                elif own >= 60:
+                    ws.own_supplies.add(supplies_per_type[type].pop())
+
+        self.workstations_state = {id: {'own': ws.own_supplies, 'needs': ws.needed_supplies} for id, ws in self.workstations.items()}
+
     def create_environment_active_area(self):
-            # Sceglie un punto di partenza casuale e imposta la cella a 1
-            current_position = Position(random.randint(0, self.X - 1), random.randint(0, self.Y - 1))
-            self.matrix[current_position.x, current_position.y] = 1
-            steps_taken = 1
+        """
+        Generates an active area within the environment matrix by randomly walking and marking cells,
+        ensuring the number of active cells matches the configuration.
+        """
+        # Start at a random position
+        current_position = Position(random.randint(0, self.X - 1), random.randint(0, self.Y - 1))
+        self.matrix[current_position.x, current_position.y] = 1  # Mark the starting cell as active
+        steps_taken = 1  # Initialize steps counter
 
-            while steps_taken < self.active_cells:
-                # Definisce i possibili movimenti: su, giù, sinistra, destra
-                movements = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-                random.shuffle(movements)
+        while steps_taken < self.active_cells:
+            # Define possible movements (up, down, left, right)
+            movements = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
-                for dx, dy in movements:
-                    next_position = Position(current_position.x + dx, current_position.y + dy)
+            for dx, dy in movements:
+                next_position = Position(current_position.x + dx, current_position.y + dy)
 
-                    if next_position != current_position and 0 <= next_position[0] < self.X and 0 <= next_position[1] < self.Y and self.matrix[next_position] == 0:
-                        self.matrix[next_position] = 1
-                        current_position = next_position
-                        steps_taken += 1
-                        break
-                    else:
-                        # Se tutte le direzioni sono bloccate, trova un nuovo punto di partenza tra quelli già impostati a 1
-                        ones = np.argwhere(self.matrix == 1)
-                        random_index = random.randint(0, len(ones) - 1)
-                        current_position = Position(ones[random_index][0], ones[random_index][1])
-            
-    def generate_agents(self):
-        for i in range(self.agent_count):
-            
-            pos = random.choice(self.agent_positions)# Initialize agent at a random warehouse - ?
-            agent = Agent(f'agent_{i}', pos)
-            self.agents[f'agent_{i}'] = agent
-            
+                # Check if next_position is valid and not yet active
+                if 0 <= next_position[0] < self.X and 0 <= next_position[1] < self.Y and self.matrix[next_position] == 0:
+                    self.matrix[next_position] = 1  # Mark the cell as active
+                    current_position = next_position  # Update current position
+                    steps_taken += 1  # Increment steps counter
+                    break
+            else:
+                # If no valid move is found, choose a new current position from the active ones
+                ones = np.argwhere(self.matrix == 1)
+                random_index = random.randint(0, len(ones) - 1)
+                current_position = Position(ones[random_index][0], ones[random_index][1])
     def generate_warehouses(self):
-        for i in range(self.warehouses_count): 
-            
-            pos = select_random_one_position(self.matrix, self.warehouse_positions)
+        """
+        Generates warehouses_count number of warehouses at unique positions.
+        
+        """
+        for i in range(self.warehouses_count):
+            pos = select_random_one_position(self.matrix, self.warehouse_positions)  # Avoids overlap with existing warehouses
             wh = Warehouse(f'warehouse_{i}', pos)
             self.warehouses[f'warehouse_{i}'] = wh
-            
-            self.warehouse_positions.append(pos)
-            self.agent_positions.append(pos)
-            self.matrix[pos] = 2
+            self.warehouse_positions.append(pos)  # Updates warehouse positions
+            self.agent_positions.append(pos)  # Agents can start at warehouse positions
+            self.matrix[pos] = 2  # Marks the position in the matrix
 
-    def generate_workstations(self):
+    def generate_agents(self):
+        """
+        Create agent_count number of agents, each initialized at a random position selected from agent_positions.
         
-        for i in range(self.workstation_count):
-            
-            pos = select_random_one_position(self.matrix, self.warehouse_positions)
-            ws = Workstation(f'workstation_{i}', pos, self.supply_types)
-            
-            self.workstations[f'workstation_{i}'] = ws
+        """
+        for i in range(self.agent_count):
+            pos = random.choice(self.agent_positions)  # Selects a random starting position
+            agent = Agent(f'agent_{i}', pos)
+            self.agents[f'agent_{i}'] = agent  # Store the agent
 
-            # Matrix set
-            if (self.matrix[pos] % 3 == 0): self.matrix[pos] += 3
-            else: self.matrix[pos] = 3
-
-    def generate_content(self):
+    def generate_supplies(self):
+        """
+        Distributes the specified types and quantities of supplies to warehouses.
         
+        """
         i = 0
         for (type, qty) in self.content:
-
             for _ in range(qty):
-                wh = random.choice(list(self.warehouses.values()))
+                wh = random.choice(list(self.warehouses.values()))  # Selects a warehouse
                 supply = Supply(f'supply_{i}', wh.position, type, wh.id)
                 self.supplies[f'supply_{i}'] = supply
                 i += 1
 
     def generate_boxex(self):
-
+        """
+        Places boxes in warehouses
+        
+        """
         for i in range(self.box_count):
-            wh = random.choice(list(self.warehouses.values()))
+            wh = random.choice(list(self.warehouses.values()))  # Selects a warehouse
             box = Box(f'box_{i}', wh.position, wh.id)
             self.boxes[f'box_{i}'] = box
-           
-    def generate_carriers(self):
 
+    def generate_workstations(self):
+        """
+        Creates workstation_count number of workstations, ensuring their positions don't clash with warehouses.
+
+        """
+        for i in range(self.workstation_count):
+            pos = select_random_one_position(self.matrix, self.warehouse_positions)  # Excludes warehouse positions
+            ws = Workstation(f'workstation_{i}', pos, self.supply_types)
+            self.workstations[f'workstation_{i}'] = ws
+            # Mark the position in the matrix
+            if self.matrix[pos] % 3 == 0:
+                self.matrix[pos] += 3
+            else:
+                self.matrix[pos] = 3
+
+    def generate_carriers(self):
+        """
+        Generates carriers and assigns them to agents with random capacities.
+
+        """
         for i, agent in enumerate(self.agents.values()):
             id = f'carrier_{i}'
-            capacity = random.randint(3, self.max_carriers_capacity)
+            capacity = random.randint(3, self.max_carriers_capacity)  # Random capacity within allowed range
             carrier = Carrier(id, agent, capacity)
             self.carriers[id] = carrier
-    
-    def toString(self):
-        print('Environment info:')
-        print(f' - Environment size: {self.X}x{self.Y}\n - Active area: {self.active_cells} ({(self.active_cells / (self.X * self.Y))*100}%)')
-        print(f' - Warehouses: {self.warehouses_count}')
-        print(f' - Agents: {self.agent_count}')
-        print(f' - Workstations: {self.workstation_count}')
-        print(f' - Content types: {self.supply_type_count}')
-        print(f' - Content total quantity: {self.supplies}')
-        print(f' - Boxes available: {len(self.boxes)}')
-        if self.problem_id != 'P1': print(f' - Carriers: {self.carriers}')
-        print('Examples:')
-        print(f' - Warehouse encoded:', list(self.warehouses.values()))
-        print(f' - Agent encoded:', list(self.agents.values()))
-        print(f' - Workstation encoded:', list(self.workstations.values()))
-        print(f' - Content encoded:', list(self.supplies.items()))
-        print(f' - Box encoded:', list(self.boxes.values())[0])
-        if self.problem_id != 'P1': print(f' - Carriers encoded:', list(self.carriers.values())[0])
 
+    def toString(self):
+        """
+        Prints information about the environment
+        """
+        print('Environment info:')
+        active_area_percentage = (self.active_cells / (self.X * self.Y)) * 100
+        print(f' - Environment size: {self.X}x{self.Y}\n - Active area: {self.active_cells} ({active_area_percentage}%)')
+        print(f' - Warehouses: {self.warehouses_count}\n - Agents: {self.agent_count}\n - Workstations: {self.workstation_count}')
+        print(f' - Supply types: {self.supply_type_count}\n - Supplies: {len(self.supplies)}\n - Boxes available: {len(self.boxes)}')
+        if self.problem_id != 'P1': print(f' - Carriers: {len(self.carriers)}')
+        print('Examples:')
+        print(f' - Warehouse encoded:', list(self.warehouses.values())[0] if self.warehouses else 'None')
+        print(f' - Agent encoded:', list(self.agents.values())[0] if self.agents else 'None')
+        print(f' - Workstation encoded:', list(self.workstations.values())[0] if self.workstations else 'None')
+        print(f' - Supplies encoded:', list(self.supplies.items())[0] if self.supplies else 'None')
+        print(f' - Box encoded:', list(self.boxes.values())[0] if self.boxes else 'None')
+        if self.problem_id != 'P1': print(f' - Carriers encoded:', list(self.carriers.values())[0] if self.carriers else 'None')
         print('Workstation goal & state:')
         for ws_id, state in self.workstations_state.items():
-            print(f' - {ws_id}:\n -- Supplies owned',state['own'],'\n -- Supplies needed ',state['needs'])
+            print(f' - {ws_id}:\n -- Supplies owned {state["own"]}\n -- Supplies needed {state["needs"]}')
         print_colored_matrix_seaborn(self.matrix, 'Environment')
-    

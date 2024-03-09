@@ -23,11 +23,19 @@ configurations = {
 
 # Configuration 3
 'config_3' : EnvironmentConfig(X=5, 
-                                         Y=10, 
+                                         Y=5, 
                                          active_cells=25, 
                                          agents=1, 
                                          boxes=10, 
                                          workstations=3, 
                                          warehouses=1,
-                                         content_type=['valve', 'bolt', 'tool', 'gear', 'circuit'])
+                                         content_type=['valve', 'bolt', 'tool', 'gear', 'circuit']),
+'config_4' : EnvironmentConfig(X=10, 
+                                         Y=10, 
+                                         active_cells=50, 
+                                         agents=1, 
+                                         boxes=10, 
+                                         workstations=10, 
+                                         warehouses=1,
+                                         content_type=['valve', 'bolt', 'tool', 'gear', 'circuit','metal'])
 }

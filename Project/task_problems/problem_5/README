@@ -1,0 +1,80 @@
+HOW TO USE PROBLEM 5
+
+
+FIRST TIME ONLY - Build docker image with ros2 and plansys2
+
+0. cd {yout-path-to-there}/Project/task_problems/problem_5
+1. docker build --rm  --tag ros-humble .
+
+RUN PROBLEM 5
+
+0. Open 2 terminals -> TERMINAL 1 & 2
+
+TERMINAL 1
+
+1 - Run the image with the problem 5 directory mounted at /workspace.
+
+docker run -v /tmp/.X11-unix/:/tmp/.X11-unix/ \
+--volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
+--network=host \
+--name ubuntu_bash \
+--env="DISPLAY" \
+-v /home/luca/Desktop/Projects/Automated-Planning/Project/task_problems/problem_5:/workspace \
+--rm \
+-i \
+-t \
+ros-humble bash
+
+2 - Move to te mounted directory
+
+cd ../workspace/p5_pkg
+
+3 - Deploy package and run it
+
+source /opt/ros/humble/setup.bash
+rosdep install --from-paths ./ --ignore-src -r -y
+colcon build --symlink-install
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+(A) ros2 launch p5_pkg p5_pkg_launch.py
+
+TERMINAL 2
+
+1 - attach to the already running container.
+
+docker exec -it ubuntu_bash bash
+
+2 - Run plansys2 terminal
+
+source /opt/ros/humble/setup.bash
+ros2 run plansys2_terminal plansys2_terminal
+
+3 - Inside plansys2 terminal.
+3.1 - Load the commands for the chosen problem (problem_5/p5_pkg/launch/commands)
+NOTE: new commands che be pasted here from each commands of each environment in problem_5/environments.
+
+source workspace/p5_pkg/launch/commands
+
+3.2 - Retrieve plan and run it
+
+get plan
+(after (A)) run 
+
+
+
+
+
+
+
+
+OTHER COMMANDS:
+
+- Package creation:
+
+ros2 pkg create -h
+
+- Save container state
+docker commit <CONTAINER ID> my_ros_project_image
+
+- Connect to a running container
+docker exec -it mio_container bash

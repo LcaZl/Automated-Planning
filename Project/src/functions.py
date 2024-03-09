@@ -7,93 +7,50 @@ import random
 from collections import namedtuple
 import os
 
-Position = namedtuple('Position', ['x','y'])
+# Represents a coordinate position with x and y values.
+Position = namedtuple('Position', ['x', 'y'])
 
-
-def extract_plan_details_0(output):
-    # Inizia a raccogliere le righe del piano dopo la riga che contiene "; Plan found with metric"
-    lines = output.split('\n')
-    plan_start = False
-    plan_lines = []
-
-    for line in lines:
-        if ";;;; Solution Found" in line and plan_start:
-            plan_lines.pop()
-            break
-        if "; Plan found with metric" in line or plan_start:
-            plan_start = True
-            plan_lines.append(line)
-
-
-    return "\n".join(plan_lines)
-
-def extract_plan_details_1(output):
-    # Inizia a raccogliere le righe del piano dopo la linea che contiene ";;;; Solution Found"
-    lines = output.split('\n')
-    plan_start = False
-    plan_lines = []
-
-    for line in lines:
-        if ";;;; Solution Found" in line:
-            plan_start = True
-            plan_lines.append(";;;; Solution Found")
-            continue
-        if plan_start:
-            plan_lines.append(line)
-
-    return "\n".join(plan_lines)
-def request_plan(env_folder, planner, args, lang = 'pddl'):
-
+def request_plan(env_folder, planner, args, lang='pddl', args_before=''):
+    """
+    Executes a planning command based on the specified planner and environment,
+    then processes and saves the output plan if found.
+    """
+    # Paths for domain, problem, and the output plan.
     domain_path = f'{env_folder}/domain.{lang}'
     problem_path = f'{env_folder}/problem.{lang}'
-    output_plan_path = f'{env_folder}/{planner}_plan.{lang}'  # Percorso del file di piano rinominato
+    output_plan_path = f'{env_folder}/{planner}_plan.{lang}'
 
-    # Costruisci il comando per eseguire il planner
+    # Construct command based on the specified planner
     command = ''
-
-    if planner == 'optic':
-        command = f'planutils run {planner} -- {args} {domain_path} {problem_path}'
-
+    if planner in ['optic', 'lama-first', 'ff', 'tfd']:
+        command = f'planutils run {planner} {domain_path} {problem_path} -- {args}'
     elif planner == 'dual-bfws-ffparser':
         command = f'planutils run {planner} -- {domain_path} {problem_path} -- {args}'
-
     elif planner == 'panda':
         command = f'java -jar ./src/PANDA.jar {args} {domain_path} {problem_path}'
-
-    elif planner == 'lama-first':
-        command = f'planutils run {planner} -- {args} {domain_path} {problem_path}'
-
-    elif planner == 'ff':
-        command = f'planutils run {planner} {domain_path} {problem_path}'
-
-    elif planner == 'tfd':
-        command = f'planutils run {planner} {domain_path} {problem_path}'
-
+    elif planner == 'downward':
+        command = f'planutils run {planner} -- --plan-file {output_plan_path} {args_before} {domain_path} {problem_path} {args}'
 
     print(f' - Command: {command}')
+    # Execute the planning command
     result = subprocess.run(command, capture_output=True, text=True, shell=True)
 
+    # Process output based on the planner used, then save the plan if found.
+    # This part is strictly related to the current use cases. It may not work properly with new planner configurations.
 
-    if planner == 'optic' and not env_folder.startswith('task_problems/problem_4'):
-        plan_details = extract_plan_details_0(result.stdout)
-
+    if planner == 'optic':
+        if not env_folder.startswith(('task_problems/problem_4', 'task_problems/problem_5')):
+            plan_details = extract_plan_details_0(result.stdout)
+        else:
+            plan_details = extract_plan_details_1(result.stdout)
+            print(result.stdout)
+        
+        # Save or report based on finding a solution.
         if ";;;; Solution Found" in plan_details:
             with open(output_plan_path, 'w') as f:
                 f.write(plan_details)
             print(f" -> Plan found, saved at: {output_plan_path}")
         else:
-
-            print(" -> No plan found")
-
-    elif planner == 'optic' and env_folder.startswith('task_problems/problem_4'):
-        plan_details = extract_plan_details_1(result.stdout)
-
-        if ";;;; Solution Found" in plan_details:
-            with open(output_plan_path, 'w') as f:
-                f.write(plan_details)
-            print(f" -> Plan found, saved at: {output_plan_path}")
-        else:
-
             print(" -> No plan found")
 
 
@@ -156,12 +113,55 @@ def request_plan(env_folder, planner, args, lang = 'pddl'):
 
     return result
 
+def extract_plan_details_0(output):
+    """
+    FOR OPTIC OUTPUT (NO DURATIVE-ACTIONS)
 
-def extract_plan_details_2(output):
-    # Inizia a raccogliere le righe del piano dopo la linea che contiene ";;;; Solution Found"
+    Extract plan details starting after "; Plan found with metric" until ";;;; Solution Found".
+    """
     lines = output.split('\n')
     plan_start = False
     plan_lines = []
+
+    for line in lines:
+        if ";;;; Solution Found" in line and plan_start:
+            plan_lines.pop()  # Remove the last line, as it's part of the end condition
+            break
+        if "; Plan found with metric" in line or plan_start:
+            plan_start = True
+            plan_lines.append(line)
+
+    return "\n".join(plan_lines)
+
+def extract_plan_details_1(output):
+    """
+    FOR OPTIC OUTPUT (WITH DURATIVE-ACTIONS)
+
+    Extract plan details starting at ";;;; Solution Found" line.
+    """
+    lines = output.split('\n')
+    plan_start = False
+    plan_lines = []
+
+    for line in lines:
+        if ";;;; Solution Found" in line:
+            plan_start = True
+            plan_lines.append(";;;; Solution Found")
+            continue
+        if plan_start:
+            plan_lines.append(line)
+
+    return "\n".join(plan_lines)
+
+def extract_plan_details_2(output):
+    """
+    FOR TFD OUTPUT
+
+    Extracts lines from the output starting after the line containing "New solution has been found."
+    """
+    lines = output.split('\n')
+    plan_start = False  # Flag to start recording lines
+    plan_lines = [] 
 
     for line in lines:
         if "New solution has been found." in line:
@@ -172,45 +172,42 @@ def extract_plan_details_2(output):
 
     return "\n".join(plan_lines)
 
-def select_random_one_position(matrix, exclude_positions=[]):
-    # Trova le posizioni dei valori impostati ad 1
-    ones_positions = np.where(np.logical_or(matrix == 1, matrix == 3))
-    ones_list = [Position(x,y) for (x,y) in zip(ones_positions[0], ones_positions[1])] # Crea una lista di tuple (x, y)
 
-    # Filtra la lista di posizioni escludendo quelle nella lista di esclusione
+def select_random_one_position(matrix, exclude_positions=[]):
+    """
+    Selects a random position with a value of 1 or 3 in the matrix, excluding specified positions.
+    (1 -> free position, 2 -> warehouse position, 3 -> workstation position, 0 -> inaccessible position)
+
+    """
+    ones_positions = np.where(np.logical_or(matrix == 1, matrix == 3))
+    ones_list = [Position(x, y) for (x, y) in zip(ones_positions[0], ones_positions[1])]
+
+    # Exclude specified positions from the list
     filtered_ones_list = [pos for pos in ones_list if pos not in exclude_positions]
 
     if not filtered_ones_list:
-        return None  # Restituisce None se non ci sono posizioni valide dopo l'esclusione
+        return None  # Return None if no positions are left after exclusion
 
-    # Seleziona una posizione casuale tra quelle rimanenti
     return random.choice(filtered_ones_list)
 
-
-
-def print_colored_matrix_seaborn(matrix : np.matrix, title):
-    # Definizione della palette di colori: uno per ogni valore unico nella matrice
-    # 0: bianco, 1: verde, 2: blu, 3: rosso
-    tiles_types = set()
+def print_colored_matrix_seaborn(matrix: np.matrix, title):
+    """
+    Displays a matrix using seaborn heatmap
+    """
     color_matrix = np.where(matrix != 0, np.where(matrix % 3 == 0, 3, matrix), matrix)
-    annot_matrix = matrix
+    annot_matrix = matrix  # Matrix to display annotations (original matrix values)
 
-    for x in range(color_matrix.shape[0]):
-        for y in range(color_matrix.shape[1]):
-            tiles_types.add(color_matrix[x][y])
+    tiles_types = set(np.unique(color_matrix))
 
     if len(tiles_types) == 3:
-        colors = ["green", "blue", "red"]
+        colors = ["green", "blue", "red"]  # Excludes white if 0 is not present
     else:
-        colors = ["white","green", "blue", "red"]
+        colors = ["white", "green", "blue", "red"]  # Includes white if 0 is present
 
-    # Crea un colormap personalizzato da una lista di colori
     cmap = sns.color_palette(colors)
     plt.figure(figsize=(20, 15))
-    plt.title(title)
-    
-    # Crea una mappa di calore con Seaborn
+    plt.title(title) 
+
     sns.heatmap(color_matrix, annot=annot_matrix, cmap=cmap, cbar=False, linewidths=.5,
                 linecolor='gray', square=True, fmt="d")
     plt.show()
-

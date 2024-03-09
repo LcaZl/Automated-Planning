@@ -13,7 +13,7 @@ class Environment_toPDDL:
         self.lang = lang
 
         self.id = str(self.generate_id())
-        self.path = f'{baseline_path}/environments/environment_{self.id}_{domain_type}'
+        self.path = f'{baseline_path}/environments/environment_{self.id}'
         self.environment = env
         self.init = set()
         self.goals = set()
@@ -53,21 +53,41 @@ class Environment_toPDDL:
         for type, objects in self.pddl_objects.items():
             if len(objects) > 0:
                 self.problem_objects += ' '.join(objects) + f' - {type} '
-               
+        self.problem_goal = 'and ' + ' '.join([f'({goal})' for goal in self.goals])
+
+
         self.generate_problem()
+        self.save_problem()
 
-        if verbose:
-            print('PDDL:')
+        if self.environment.problem_id == 'P5':
+            self.generate_commands_for_ros2()
+            
+        if verbose: self.toString()
 
-            print(f' - PDDL objects:')
-            for (key, objs) in self.pddl_objects.items():
-                print(f' -- {key}:', objs)
+    def generate_commands_for_ros2(self):
+        self.commands = []
 
-            print(' - PDDL goals:')
-            for fact in self.goals:
-                print(f' - {fact}')
+        for type, ids in self.pddl_objects.items():
+            for id in ids:
+                self.commands.append(f'set instance {id} {type}')
 
-    
+        for fact in self.init:
+            self.commands.append(f'set predicate ({fact})')
+
+        self.problem_goal = 'and ' + ' '.join([f'({goal})' for goal in self.goals])
+        self.commands.append(f'set goal ({self.problem_goal})')
+
+        self.pddl_problem = '\n'.join(self.commands)
+
+        os.makedirs(self.path, exist_ok=True)
+
+        commands_file_path = os.path.join(self.path, f'commands')
+
+        with open(commands_file_path, 'w') as file:
+            file.write(self.pddl_problem)
+        print(f" - Ros2 commands saved at: {commands_file_path}")
+
+
     def convert_area(self):
         for x in range(self.environment.matrix.shape[0]):
             for y in range(self.environment.matrix.shape[1]):
@@ -163,11 +183,10 @@ class Environment_toPDDL:
  
     def generate_problem(self):
 
-        self.problem_goal = 'and ' + ' '.join([f'({goal})' for goal in self.goals])
 
         if self.lang == 'pddl':
             if self.problem_id != 'P1' and self.domain_type == 'flt':
-                print('aaaa')
+
                 self.pddl_problem = (';; problem file: problem_' + self.id + '.pddl\n' +
                         '(define (problem default)\n' +
                         '  (:domain default)\n' +
@@ -207,11 +226,11 @@ class Environment_toPDDL:
                     '  )\n' +
                     '  (:init ' + self.problem_init + ')\n)')
 
-        self.save_problem()
         
     def generate_id(self):
         max_index = -1 
         environments_path = self.baseline_path + '/environments/'
+
         for item in os.listdir(environments_path):
             full_path = os.path.join(environments_path, item)
             if os.path.isdir(full_path) and item.startswith("environment_"):
@@ -236,3 +255,15 @@ class Environment_toPDDL:
 
         shutil.copyfile(domain_file_path, new_domain_file_path)
         print(f" - Domain file copied to: {new_domain_file_path}")
+
+
+    def toString(self):
+        print('PDDL:')
+
+        print(f' - PDDL objects:')
+        for (key, objs) in self.pddl_objects.items():
+            print(f' -- {key}:', objs)
+
+        print(' - PDDL goals:')
+        for fact in self.goals:
+            print(f' -- {fact}')
