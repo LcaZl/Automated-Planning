@@ -17,12 +17,12 @@ class Environment_generator:
         self.workstation_count = configuration.workstations  # Number of workstations
 
         # Setup for content type and initial box count.
-        self.content = [(type, self.workstation_count) for type in configuration.content_type]
+        self.content = [(type, self.workstation_count) for type in configuration.supply_types]
         self.box_count = configuration.boxes
 
         # Initialize environment matrix and supply types.
         self.matrix = np.zeros((self.X, self.Y), dtype=int)  # Environment matrix
-        self.supply_types = configuration.content_type
+        self.supply_types = configuration.supply_types
         self.supply_type_count = len(self.content)
 
         # Initialize positions and internal representations.
@@ -172,7 +172,7 @@ class Environment_generator:
         """
         for i, agent in enumerate(self.agents.values()):
             id = f'carrier_{i}'
-            capacity = random.randint(3, self.max_carriers_capacity)  # Random capacity within allowed range
+            capacity = random.randint(2, self.max_carriers_capacity)  # Random capacity within allowed range
             carrier = Carrier(id, agent, capacity)
             self.carriers[id] = carrier
 
