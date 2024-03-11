@@ -30,25 +30,25 @@
     )
 
     (:task t-take_box
-        :parameters (?a - agent ?b - box ?c - carrier)
+        :parameters (?a - agent ?b - box)
         :precondition ()
         :effect ()    
     )
 
     (:task t-fill_box
-        :parameters (?a - agent ?s - supply ?b - box)
+        :parameters (?a - agent ?b - box ?s - supply)
         :precondition ()
         :effect ()    
     ) 
 
     (:task t-deliver_box
-        :parameters (?a - agent ?ws - workstation ?b - box ?c - carrier ?l - location)
+        :parameters (?a - agent ?ws - workstation ?b - box ?l - location)
         :precondition ()
         :effect ()    
     ) 
         
     (:task t-deliver_supply
-        :parameters (?ws - workstation ?t - supply_type)
+        :parameters (?a - agent ?ws - workstation ?t - supply_type)
         :precondition ()
         :effect ()
     )
@@ -56,7 +56,12 @@
 	
     (:method m-take_box
       :parameters (?a - agent ?l - location ?b - box ?c - carrier ?c0 ?c1 - capacity)
-      :task (t-take_box ?a ?b ?c)
+      :task (t-take_box ?a ?b)
+      :precondition (and
+        (attached ?c ?a)
+        (predecessor ?c0 ?c1)
+        (carrier_capacity ?c ?c1)
+      )
       :subtasks (and
         (task0 (t-go_to ?a ?l))
         (task1 (take_box ?a ?b ?c ?l ?c0 ?c1))
@@ -67,37 +72,49 @@
     )
 
     (:method m-fill_box
-      :parameters (?a - agent ?s - supply ?l - location ?b - box)
-      :task (t-fill_box ?a ?s ?b)
+      :parameters (?a - agent ?b - box ?s - supply ?l - location)
+      :task (t-fill_box ?a ?b ?s)
+      :precondition (and
+        (empty ?b)
+        (box_carried_by ?b ?a)
+      )
       :subtasks (and
         (task0 (t-go_to ?a ?l))
         (task1 (fill_box ?a ?b ?s ?l))
       )
       :ordering (and
-        (task0 < task1)
-      )
+        (task0 < task1))
     )
 
     (:method m-deliver_box 
-      :parameters (?a - agent ?ws - workstation ?l - location ?b - box ?c - carrier ?c0 ?c1 - capacity)
-      :task (t-deliver_box ?a ?ws ?b ?c ?l)
+      :parameters (?a - agent ?ws - workstation ?b - box ?c - carrier ?l - location ?c0 ?c1 - capacity)
+      :task (t-deliver_box ?a ?ws ?b ?l)
+      :precondition(and
+        (attached ?c ?a)
+        (box_carried_by ?b ?a)
+        (at ?ws ?l)
+        (predecessor ?c0 ?c1)
+      )
       :subtasks (and
         (task0 (t-go_to ?a ?l))
         (task1 (deliver_box ?a ?ws ?b ?c ?l ?c0 ?c1))
       )
       :ordering (and
-        (task0 < task1)
-      )
+        (task0 < task1))
     )
 
     (:method m-deliver_supply
-        :parameters (?a - agent ?ws - workstation ?t - supply_type ?s - supply ?b - box ?c - carrier ?l - location) 
-        :task (t-deliver_supply ?ws ?t)
+        :parameters (?a - agent ?ws - workstation ?t - supply_type ?b - box ?s - supply ?l - location) 
+        :task (t-deliver_supply ?a ?ws ?t)
+        :precondition(and
+          (at ?ws ?l)
+        )
         :subtasks (and
-                    (task0 (t-take_box ?a ?b ?c))
-                    (task1 (t-fill_box ?a ?s ?b))
-                    (task2 (t-deliver_box ?a ?ws ?b ?c ?l))
+                    (task0 (t-take_box ?a ?b))
+                    (task1 (t-fill_box ?a ?b ?s))
+                    (task2 (t-deliver_box ?a ?ws ?b ?l))
                     (task3 (deliver_supply ?a ?ws ?t ?s ?b ?l))
+
                   )
         :ordering (and 
                        (task0 < task1)

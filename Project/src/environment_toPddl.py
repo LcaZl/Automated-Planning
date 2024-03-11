@@ -126,7 +126,7 @@ class Environment_toPDDL:
                         self.goals.add(f'has {ws.id} {supply.type}')
 
                     elif self.lang == 'hddl':
-                        self.goals.add(f'task{i} (t-deliver_supply {ws.id} {supply.type})')
+                        self.goals.add(f'task{i} (t-deliver_supply ' + self.environment.agents[f'agent_{int(i%self.environment.agent_count)}'].id + f' {ws.id} {supply.type})')
                         if i != 0: self.goal_ordering.add(f'task{i-1} < task{i}')
                         i += 1
 
@@ -188,13 +188,15 @@ class Environment_toPDDL:
         if self.lang == 'pddl':
             if self.problem_id != 'P1' and self.domain_type == 'flt':
 
+                metric = f'minimize (total-cost)'
+                
                 self.pddl_problem = (';; problem file: problem_' + self.id + '.pddl\n' +
                         '(define (problem default)\n' +
                         '  (:domain default)\n' +
                         '  (:objects ' + self.problem_objects + ')\n' +
                         '  (:init ' + self.problem_init + ')\n' +
                         '  (:goal (' + self.problem_goal + '))\n' +
-                        '  (:metric maximize (- (/ (total-carrier-load) (total-carrier-capacity)) (total-cost)))\n)')
+                        '  (:metric ' + metric + ')\n)')
             
             elif self.problem_id == 'P4':
 
@@ -241,7 +243,7 @@ class Environment_toPDDL:
 
     
     def save_problem(self):
-        domain_name = f'domain.{self.lang}' if self.domain_type == 'no_flt' else f'domain_flt.{self.lang}'
+        domain_name = f'domain.{self.lang}'
         ext = 'pddl' if self.lang == 'pddl' else 'hddl'
         os.makedirs(self.path, exist_ok=True)
 

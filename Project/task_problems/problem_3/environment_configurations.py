@@ -17,10 +17,10 @@ configurations = {
                                          Y=6, 
                                          active_cells=30, 
                                          agents=2, 
-                                         boxes=20, 
+                                         boxes=10, 
                                          workstations=2, 
                                          warehouses=1,
-                                         supply_types=['valve', 'bolt', 'tool','gear'],
+                                         supply_types=['valve', 'bolt', 'tool'],
                                          carrier_capacity = 3),
 
 # Configuration 3
@@ -28,9 +28,9 @@ configurations = {
                                          Y=7, 
                                          active_cells=40, 
                                          agents=3, 
-                                         boxes=30, 
+                                         boxes=15, 
                                          workstations=3, 
                                          warehouses=1,
-                                         supply_types=['valve', 'bolt', 'tool', 'gear', 'circuit'],
+                                         supply_types=['valve', 'bolt','tool'],
                                          carrier_capacity = 4)
 }
