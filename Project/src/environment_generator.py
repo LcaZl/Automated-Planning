@@ -69,9 +69,9 @@ class Environment_generator:
                 need = random.randint(0, 100)  # Randomly decide if a workstation needs a supply
                 own = random.randint(0, 100)  # Randomly decide if a workstation already owns a supply
 
-                if need > 20:
+                if need > 40:
                     ws.needed_supplies.add(supplies_per_type[type].pop())
-                elif own >= 60:
+                elif own >= 50:
                     ws.own_supplies.add(supplies_per_type[type].pop())
 
         self.workstations_state = {id: {'own': ws.own_supplies, 'needs': ws.needed_supplies} for id, ws in self.workstations.items()}
@@ -172,7 +172,8 @@ class Environment_generator:
         """
         for i, agent in enumerate(self.agents.values()):
             id = f'carrier_{i}'
-            capacity = random.randint(2, self.max_carriers_capacity)  # Random capacity within allowed range
+            # random.randint(2, self.max_carriers_capacity) 
+            capacity = self.max_carriers_capacity  # Random capacity within allowed range
             carrier = Carrier(id, agent, capacity)
             self.carriers[id] = carrier
 

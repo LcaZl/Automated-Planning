@@ -22,8 +22,11 @@ def request_plan(env_folder, planner, args, lang='pddl', args_before=''):
 
     # Construct command based on the specified planner
     command = ''
-    if planner in ['optic', 'lama-first', 'ff', 'tfd']:
+    if planner in ['lama-first', 'ff', 'tfd', 'metric-ff']:
         command = f'planutils run {planner} {domain_path} {problem_path} -- {args}'
+    elif planner == 'optic':
+        command = f'planutils run {planner} -- {args} {domain_path} {problem_path}'
+
     elif planner == 'dual-bfws-ffparser':
         command = f'planutils run {planner} -- {domain_path} {problem_path} -- {args}'
     elif planner == 'panda':
@@ -39,14 +42,15 @@ def request_plan(env_folder, planner, args, lang='pddl', args_before=''):
     # This part is strictly related to the current use cases. It may not work properly with new planner configurations.
 
     if planner == 'optic':
-        if not env_folder.startswith(('task_problems/problem_4', 'task_problems/problem_5')):
+        print(f'in optin {env_folder}')
+        if not 'task_problems/problem_4' in env_folder and not 'task_problems/problem_5' in env_folder:
             plan_details = extract_plan_details_0(result.stdout)
         else:
             plan_details = extract_plan_details_1(result.stdout)
-            print(result.stdout)
         
+        print(plan_details)
         # Save or report based on finding a solution.
-        if ";;;; Solution Found" in plan_details:
+        if "Solution Found" in plan_details:
             with open(output_plan_path, 'w') as f:
                 f.write(plan_details)
             print(f" -> Plan found, saved at: {output_plan_path}")
@@ -76,7 +80,7 @@ def request_plan(env_folder, planner, args, lang='pddl', args_before=''):
         else:
             print(" -> No plan found")
 
-    elif planner == 'ff':
+    elif planner in ['ff', 'metric-ff']:
         generated_plan_path = f'{env_folder}/problem.pddl.plan'
         if os.path.exists(generated_plan_path):
             os.rename(generated_plan_path, output_plan_path)
@@ -139,14 +143,16 @@ def extract_plan_details_1(output):
 
     Extract plan details starting at ";;;; Solution Found" line.
     """
+
     lines = output.split('\n')
     plan_start = False
     plan_lines = []
 
     for line in lines:
-        if ";;;; Solution Found" in line:
+        print(line)
+        if "Solution Found" in line:
             plan_start = True
-            plan_lines.append(";;;; Solution Found")
+            plan_lines.append("Solution Found")
             continue
         if plan_start:
             plan_lines.append(line)

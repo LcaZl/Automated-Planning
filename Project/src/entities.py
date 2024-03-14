@@ -20,7 +20,6 @@ class Warehouse:
     def __str__(self):
         return f'[{self.id}, {self.position}]'
     
-    # Ensures consistent representation in print and debug outputs
     __repr__ = __str__
 
 
@@ -35,7 +34,6 @@ class Workstation:
     def __str__(self):
         return f'[{self.id}, {self.position}, O:{self.own_supplies}, N:{self.needed_supplies}]'
     
-    # Ensures consistent representation in print and debug outputs
     __repr__ = __str__
 
 
