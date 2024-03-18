@@ -21,7 +21,6 @@
     (unloaded_box ?b - box ?ws - workstation)
     (attached ?c - carrier ?a - agent) ; A carrier is attached to an agent.
     (on ?c - carrier ?b - box) ; A box is on a carrier.
-      ;; capacity
   )
   
   ;; Actions
