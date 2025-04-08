@@ -1,0 +1,195 @@
+set instance l2_0 location
+set instance l0_1 location
+set instance l2_1 location
+set instance l1_4 location
+set instance l4_2 location
+set instance l4_0 location
+set instance l3_1 location
+set instance l0_4 location
+set instance l1_1 location
+set instance l0_0 location
+set instance l4_3 location
+set instance l1_0 location
+set instance l2_4 location
+set instance l3_0 location
+set instance l0_3 location
+set instance l2_2 location
+set instance l4_4 location
+set instance l3_4 location
+set instance l0_2 location
+set instance l1_3 location
+set instance l3_3 location
+set instance l1_2 location
+set instance l3_2 location
+set instance l2_3 location
+set instance l4_1 location
+set instance agent_1 agent
+set instance agent_0 agent
+set instance supply_3 supply
+set instance supply_0 supply
+set instance supply_4 supply
+set instance supply_5 supply
+set instance supply_1 supply
+set instance supply_2 supply
+set instance box_1 box
+set instance box_8 box
+set instance box_6 box
+set instance box_4 box
+set instance box_9 box
+set instance box_2 box
+set instance box_7 box
+set instance box_3 box
+set instance box_0 box
+set instance box_5 box
+set instance workstation_0 workstation
+set instance workstation_1 workstation
+set instance warehouse_0 warehouse
+set instance carrier_0 carrier
+set instance carrier_1 carrier
+set instance tool supply_type
+set instance valve supply_type
+set instance bolt supply_type
+set instance capacity_0 capacity
+set instance capacity_1 capacity
+set instance capacity_2 capacity
+set instance capacity_3 capacity
+set predicate (adjacent l0_0 l0_1)
+set predicate (adjacent l0_0 l1_0)
+set predicate (adjacent l3_1 l3_0)
+set predicate (at box_2 l1_4)
+set predicate (empty box_0)
+set predicate (at supply_3 l1_4)
+set predicate (adjacent l1_4 l2_4)
+set predicate (adjacent l2_3 l3_3)
+set predicate (free_arms agent_0)
+set predicate (adjacent l2_3 l2_4)
+set predicate (at box_3 l1_4)
+set predicate (at box_4 l1_4)
+set predicate (empty box_5)
+set predicate (adjacent l2_3 l2_2)
+set predicate (adjacent l1_3 l0_3)
+set predicate (adjacent l0_2 l1_2)
+set predicate (predecessor capacity_1 capacity_2)
+set predicate (adjacent l4_3 l4_4)
+set predicate (is supply_3 bolt)
+set predicate (adjacent l0_1 l0_2)
+set predicate (available box_0)
+set predicate (available box_3)
+set predicate (adjacent l1_3 l1_2)
+set predicate (empty box_4)
+set predicate (adjacent l3_1 l2_1)
+set predicate (adjacent l4_0 l3_0)
+set predicate (empty box_3)
+set predicate (at supply_4 l1_4)
+set predicate (adjacent l4_1 l4_0)
+set predicate (at supply_0 l1_4)
+set predicate (adjacent l4_3 l3_3)
+set predicate (available box_2)
+set predicate (empty box_7)
+set predicate (loaded_to supply_5 workstation_0)
+set predicate (adjacent l3_2 l2_2)
+set predicate (available box_1)
+set predicate (at workstation_1 l4_1)
+set predicate (adjacent l3_2 l3_1)
+set predicate (available box_7)
+set predicate (attached carrier_1 agent_1)
+set predicate (available box_9)
+set predicate (adjacent l4_2 l4_1)
+set predicate (adjacent l2_1 l1_1)
+set predicate (adjacent l0_2 l0_3)
+set predicate (adjacent l2_4 l1_4)
+set predicate (free_arms agent_1)
+set predicate (adjacent l0_1 l0_0)
+set predicate (at box_8 l1_4)
+set predicate (adjacent l3_4 l3_3)
+set predicate (is supply_4 tool)
+set predicate (adjacent l1_2 l0_2)
+set predicate (adjacent l4_0 l4_1)
+set predicate (at box_6 l1_4)
+set predicate (adjacent l1_3 l2_3)
+set predicate (available box_8)
+set predicate (adjacent l2_1 l3_1)
+set predicate (adjacent l0_4 l1_4)
+set predicate (at warehouse_0 l1_4)
+set predicate (at supply_5 l1_4)
+set predicate (adjacent l2_4 l3_4)
+set predicate (available box_4)
+set predicate (adjacent l2_3 l1_3)
+set predicate (adjacent l0_3 l0_2)
+set predicate (carrier_capacity carrier_0 capacity_3)
+set predicate (adjacent l3_2 l4_2)
+set predicate (loaded_to supply_2 workstation_1)
+set predicate (carrier_capacity carrier_1 capacity_3)
+set predicate (adjacent l2_0 l2_1)
+set predicate (adjacent l3_0 l4_0)
+set predicate (at box_0 l1_4)
+set predicate (empty box_9)
+set predicate (adjacent l4_2 l4_3)
+set predicate (at supply_1 l1_4)
+set predicate (adjacent l4_1 l3_1)
+set predicate (adjacent l3_3 l3_4)
+set predicate (at supply_2 l1_4)
+set predicate (adjacent l3_0 l3_1)
+set predicate (adjacent l2_1 l2_2)
+set predicate (adjacent l3_3 l4_3)
+set predicate (adjacent l3_1 l3_2)
+set predicate (empty box_6)
+set predicate (adjacent l1_0 l2_0)
+set predicate (adjacent l2_2 l1_2)
+set predicate (adjacent l1_4 l1_3)
+set predicate (adjacent l2_2 l2_1)
+set predicate (adjacent l1_4 l0_4)
+set predicate (adjacent l2_2 l2_3)
+set predicate (adjacent l3_0 l2_0)
+set predicate (adjacent l1_0 l0_0)
+set predicate (adjacent l1_0 l1_1)
+set predicate (is supply_0 valve)
+set predicate (adjacent l1_1 l1_2)
+set predicate (is supply_5 tool)
+set predicate (at workstation_0 l0_1)
+set predicate (at agent_0 l1_4)
+set predicate (adjacent l1_1 l1_0)
+set predicate (is supply_1 valve)
+set predicate (adjacent l1_1 l0_1)
+set predicate (adjacent l4_1 l4_2)
+set predicate (predecessor capacity_0 capacity_1)
+set predicate (adjacent l4_2 l3_2)
+set predicate (attached carrier_0 agent_0)
+set predicate (adjacent l2_0 l1_0)
+set predicate (adjacent l0_1 l1_1)
+set predicate (adjacent l3_4 l2_4)
+set predicate (adjacent l2_0 l3_0)
+set predicate (loaded_to supply_1 workstation_1)
+set predicate (adjacent l3_2 l3_3)
+set predicate (empty box_1)
+set predicate (adjacent l0_3 l1_3)
+set predicate (at box_7 l1_4)
+set predicate (adjacent l4_4 l4_3)
+set predicate (adjacent l2_1 l2_0)
+set predicate (is supply_2 bolt)
+set predicate (adjacent l3_1 l4_1)
+set predicate (at agent_1 l1_4)
+set predicate (empty box_2)
+set predicate (available box_6)
+set predicate (empty box_8)
+set predicate (at box_1 l1_4)
+set predicate (adjacent l3_3 l2_3)
+set predicate (adjacent l0_3 l0_4)
+set predicate (at box_5 l1_4)
+set predicate (adjacent l4_4 l3_4)
+set predicate (at box_9 l1_4)
+set predicate (adjacent l1_3 l1_4)
+set predicate (adjacent l0_2 l0_1)
+set predicate (predecessor capacity_2 capacity_3)
+set predicate (adjacent l2_2 l3_2)
+set predicate (adjacent l1_2 l1_3)
+set predicate (adjacent l0_4 l0_3)
+set predicate (available box_5)
+set predicate (adjacent l1_2 l2_2)
+set predicate (adjacent l1_1 l2_1)
+set predicate (adjacent l2_4 l2_3)
+set predicate (adjacent l3_3 l3_2)
+set predicate (adjacent l1_2 l1_1)
+set predicate (adjacent l3_4 l4_4)
+set predicate (adjacent l4_3 l4_2)
+set goal (and (has workstation_0 bolt) (has workstation_1 tool))
